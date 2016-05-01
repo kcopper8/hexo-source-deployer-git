@@ -1,6 +1,6 @@
 'use strict';
 
-//var git_push = require('../../lib/git_push');
+var git_push = require('../../lib/git_push');
 var pathFn = require('path');
 var fs = require('hexo-fs');
 var util = require('hexo-util');
@@ -14,12 +14,7 @@ describe('git_push', function() {
 
   function makePublicDir() {
     var filePath = pathFn.join(publicDir, 'foo.txt');
-
-    return fs.writeFile(filePath, 'foo').then(function() {
-      console.log('file write success', arguments);
-    }, function() {
-      console.error('file write failure', arguments);
-    });
+    return fs.writeFile(filePath, 'foo');
   }
 
   function makeFakeRemoteRepository() {
@@ -36,34 +31,57 @@ describe('git_push', function() {
     return util.spawn('git', ['clone', fakeRemote, validateDir, '--branch', branch]);
   }
 
+  function validateClonedDirectory() {
+    return fs.readFile(pathFn.join(validateDir, '.git', 'HEAD'))
+      .then(function(content) {
+        expect(content.trim()).toBe('ref: refs/heads/' + branch);
+      })
+      .then(function() {
+        return fs.readFile(pathFn.join(validateDir, 'foo.txt'));
+      })
+      .then(function(content) {
+        expect(content).toBe('foo');
+      });
+  }
+
+  function validate() {
+    return cloneFromRemoteRepository()
+      .then(validateClonedDirectory);
+  }
 
   beforeEach(function(done) {
-    makePublicDir()
+    clearBaseDir()
+      .then(makePublicDir, makePublicDir)
       .then(makeFakeRemoteRepository)
-      .then(done, done);
+      .then(done, done.fail);
+      // done();
   });
 
   afterEach(function(done) {
-    //clearBaseDir().then(done, done);
-    done();
+    clearBaseDir().then(done, done.fail);
+    // done();
   });
 
 
   // test's test
-  describe('git_push test', function() {
+  xdescribe('git_push test', function() {
     it('has fakeRemote and baseDir for all Test', function(done) {
-      fs.exists(fakeRemote).then(function(result) {
+      return fs.exists(fakeRemote).then(function(result) {
         expect(result).toBe(true);
       }).then(function() {
         return fs.exists(baseDir);
       }).then(function(result) {
         expect(result).toBe(true);
-      }).then(done, done);
+      }).then(done, done.fail);
     });
   });
 
-  it('', function() {
-
-
+  it('run', function(done) {
+    return git_push({
+      path : publicDir,
+      repository : fakeRemote
+    })
+      .then(validate)
+      .then(done, done.fail);
   });
 });
