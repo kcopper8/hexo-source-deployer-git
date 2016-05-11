@@ -13,6 +13,4 @@ beforeEach(function() {
       };
     }
   });
-
-
 });

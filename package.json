@@ -17,6 +17,7 @@
     "jasmine": "^2.4.1"
   },
   "dependencies": {
+    "dir-compare": "^1.0.1",
     "hexo-fs": "^0.1.5",
     "hexo-util": "^0.5.3",
     "lodash": "^4.11.1"

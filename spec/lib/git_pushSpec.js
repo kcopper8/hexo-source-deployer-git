@@ -4,13 +4,13 @@ var git_push = require('../../lib/git_push');
 var pathFn = require('path');
 var fs = require('hexo-fs');
 var util = require('hexo-util');
+var dircompare = require('dir-compare');
 
 describe('git_push', function() {
   var baseDir = pathFn.join(__dirname, 'publish_test');
   var publicDir = pathFn.join(baseDir, 'public');
   var fakeRemote = pathFn.join(baseDir, 'remote');
   var validateDir = pathFn.join(baseDir, 'validate');
-  var branch = 'master';
 
   function makePublicDir() {
     var filePath = pathFn.join(publicDir, 'foo.txt');
@@ -27,26 +27,31 @@ describe('git_push', function() {
     return fs.rmdir(baseDir);
   }
 
-  function cloneFromRemoteRepository() {
-    return util.spawn('git', ['clone', fakeRemote, validateDir, '--branch', branch]);
+  function cloneFromRemoteRepository(branch) {
+    return util.spawn('git', ['clone', fakeRemote, validateDir, '--branch', branch], { verbose : true });
   }
 
-  function validateClonedDirectory() {
+  function validateClonedDirectory(branch) {
     return fs.readFile(pathFn.join(validateDir, '.git', 'HEAD'))
       .then(function(content) {
         expect(content.trim()).toBe('ref: refs/heads/' + branch);
       })
       .then(function() {
-        return fs.readFile(pathFn.join(validateDir, 'foo.txt'));
+        return dircompare.compare(publicDir, validateDir, {
+          noDiffSet: true,
+          excludeFilter : '.git'
+        });
       })
-      .then(function(content) {
-        expect(content).toBe('foo');
+      .then(function(res) {
+        expect(res.same).toBe(true);
       });
   }
 
-  function validate() {
-    return cloneFromRemoteRepository()
-      .then(validateClonedDirectory);
+  function validate(branch) {
+    return cloneFromRemoteRepository(branch)
+      .then(function() {
+        return validateClonedDirectory(branch);
+      });
   }
 
   beforeEach(function(done) {
@@ -54,7 +59,6 @@ describe('git_push', function() {
       .then(makePublicDir, makePublicDir)
       .then(makeFakeRemoteRepository)
       .then(done, done.fail);
-      // done();
   });
 
   afterEach(function(done) {
@@ -62,26 +66,44 @@ describe('git_push', function() {
     // done();
   });
 
-
-  // test's test
-  xdescribe('git_push test', function() {
-    it('has fakeRemote and baseDir for all Test', function(done) {
-      return fs.exists(fakeRemote).then(function(result) {
-        expect(result).toBe(true);
-      }).then(function() {
-        return fs.exists(baseDir);
-      }).then(function(result) {
-        expect(result).toBe(true);
-      }).then(done, done.fail);
-    });
-  });
-
-  it('run', function(done) {
+  it('can pushes directory that is not initialized', function(done) {
     return git_push({
       path : publicDir,
-      repository : fakeRemote
-    })
-      .then(validate)
-      .then(done, done.fail);
+      repository : fakeRemote,
+      branch : 'master'
+    }).then(function() {
+      return validate('master');
+    }).then(done, done.fail);
+  });
+
+  it('can pushes directory that is already initialized', function(done){
+    return git_push({
+      path : publicDir,
+      repository : fakeRemote,
+      branch : 'master'
+    }).then(function() {
+      // write any files
+      var filePath = pathFn.join(publicDir, 'foo2.txt');
+      return fs.writeFile(filePath, 'foo2');
+    }).then(function() {
+      // second push
+      return git_push({
+        path : publicDir,
+        repository : fakeRemote,
+        branch : 'master'
+      });
+    }).then(function() {
+      return validate('master');
+    }).then(done, done.fail);
+  });
+
+  it('can pushes directory to branch where is not \'master\'', function(done) {
+    return git_push({
+      path : publicDir,
+      repository : fakeRemote,
+      branch : 'source'
+    }).then(function() {
+      return validate('source');
+    }).then(done, done.fail);
   });
 });
