@@ -21,12 +21,6 @@ gulp.task('test', function(callback) {
 		console.error(stderr);
 		callback();
 	});
-
 });
 
-gulp.task('watch', [], function() {
-	gulp.watch(env.all_scripts, ['lint', 'test']);
-});
-
-
-gulp.task('default', []);
+gulp.task('default', ['lint', 'test']);
