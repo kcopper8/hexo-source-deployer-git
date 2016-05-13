@@ -1,0 +1,29 @@
+{
+  "name": "hexo-source-deployer-git",
+  "version": "0.1.0",
+  "description": "Git deployer plugin for Hexo source files.",
+  "main": "index",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "author": "kcopper8",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^2.7.0",
+    "eslint-config-hexo": "^1.0.3",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^2.0.0",
+    "gulp-jasmine": "^2.3.0",
+    "jasmine": "^2.4.1"
+  },
+  "dependencies": {
+    "dir-compare": "^1.0.1",
+    "hexo-fs": "^0.1.5",
+    "hexo-util": "^0.5.3",
+    "lodash": "^4.11.1"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/kcopper8/hexo-source-deployer-git.git"
+  }
+}
