@@ -1,4 +1,5 @@
 # hexo-source-deployer-git
+[![Build Status](https://travis-ci.org/kcopper8/hexo-source-deployer-git.svg)](https://travis-ci.org/kcopper8/hexo-source-deployer-git)
 
 This plugin deploys source of your [Hexo](hexo.io) site, not static files
  generated. Pushing your source to repository is difference with deploying.
