@@ -4,6 +4,8 @@ node_js:
   - "5"
 
 before_script:
+  - git config --global user.email "you@example.com"
+  - git config --global user.name "Your Name"
   - npm install -g gulp jasmine
 
 script: jasmine
